@@ -52,19 +52,19 @@ int main(){
 				printf("%s", instrucao);
 				break;
 			}
-			case 'r':{
+			case 'r':{ //decodificação e executação
 				int numInstrucoes;
 				scanf("%d", &numInstrucoes); //lê a quantidade de instruções a serem executadas
 				int contOpCode=0;
 				for(int i=0; i<numInstrucoes; i++){
-					switch(identificaOpCode(contOpCode,contOpCode+1)){
+					switch(identificaOpCode(contOpCode,contOpCode+1)){ //identifica a instrução a ser executada
 						/* 
 						0 = lb
 						1 = sb
 						2 = add
 						3 = jump
 						*/
-						case 0:{
+						case 0:{ //aqui deve ser realizado a execução, os printfs são o significado de cada instrução decodificada
 							printf("Carrega um byte de um endereço da memoria (end) para um registrador (reg)\n");
 							break;
 						}
