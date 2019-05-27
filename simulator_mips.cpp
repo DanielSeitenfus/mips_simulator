@@ -55,9 +55,8 @@ int main(){
 			case 'r':{ //decodificação e executação
 				int numInstrucoes;
 				scanf("%d", &numInstrucoes); //lê a quantidade de instruções a serem executadas
-				int contOpCode=0;
 				for(int i=0; i<numInstrucoes; i++){
-					switch(identificaOpCode(contOpCode,contOpCode+1)){ //identifica a instrução a ser executada
+					switch(identificaOpCode(pc,pc+1)){ //identifica a instrução a ser executada
 						/* 
 						0 = lb
 						1 = sb
@@ -81,7 +80,7 @@ int main(){
 							break;
 						}
 					}
-					contOpCode+=10;
+					pc+=10;
 				}
 				break;
 			}
