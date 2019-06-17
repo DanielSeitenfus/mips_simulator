@@ -12,16 +12,16 @@ main:
         li     $a2, 0 		     # Modo - é ignorado pelo serviço
         li     $v0, SERVICO_ABRE_ARQUIVO	
         syscall         
+      	
+        sw     $v0, 0($sp) 	     # salva o retorno da leitura do arquivo 
+        slt    $t0, $v0, $zero       # se tiver algum erro, termina o programa
+        bne    $t0, $zero, MSG_ERRO  # caso contrário, continua a execução
         
         #O ERRO ESTÁ AQUI!
         imprime_str("\nInforme o numero de instruçoes a executar: ")
         jal LEITURA_INTEIRO  # chama função para ler
         la  $t6, 0($v0)	     # carrega o inteiro lido em $t6     
       	li  $t7, 0
-      	
-        sw     $v0, 0($sp) 	     # salva o retorno da leitura do arquivo 
-        slt    $t0, $v0, $zero       # se tiver algum erro, termina o programa
-        bne    $t0, $zero, MSG_ERRO  # caso contrário, continua a execução
         j      Fim_Arquivo
                
                
