@@ -13,6 +13,7 @@ main:
         li     $v0, SERVICO_ABRE_ARQUIVO	
         syscall         
         
+        #O ERRO ESTÁ AQUI!
         imprime_str("\nInforme o numero de instruçoes a executar: ")
         jal LEITURA_INTEIRO  # chama função para ler
         la  $t6, 0($v0)	     # carrega o inteiro lido em $t6     
