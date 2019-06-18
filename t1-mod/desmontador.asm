@@ -3,36 +3,39 @@
 .globl      main
 
 main:
-	# Reserva espaço na pilha para variáveis
+	# Reserva espaco na pilha para variaveis
 	addiu  $sp, $sp, -8
 				          
 	# Abertura do arquivo
+        # $v0 contÃ©m descritor do arquivo
         la     $a0, Entrada 	     # $a0 <- endereco da string com o nome do arquivo
         li     $a1, 0 		     # Flags: 0 - indica modo de leitura
-        li     $a2, 0 		     # Modo - é ignorado pelo serviço
+        li     $a2, 0 		     # Modo - ï¿½ ignorado pelo servico
         li     $v0, SERVICO_ABRE_ARQUIVO	
         syscall         
       	
+      	# Salva retorno da leitura em $sp
         sw     $v0, 0($sp) 	     # salva o retorno da leitura do arquivo 
         slt    $t0, $v0, $zero       # se tiver algum erro, termina o programa
-        bne    $t0, $zero, MSG_ERRO  # caso contrário, continua a execução
+        bne    $t0, $zero, MSG_ERRO  # caso contrario, continua a execucao
         
-        imprime_str("\nInforme o numero de instruçoes a executar: ")
-        jal LEITURA_INTEIRO  # chama função para ler
+        imprime_str("\nInforme o numero de instrucoes a executar: ")
+        jal LEITURA_INTEIRO  # chama funcao para ler
         la  $t6, 0($v0)	     # carrega o inteiro lido em $t6     
-      	li  $t7, 0
-        j      Fim_Arquivo
+      	li  $t7, 0	     # inicializa contador em $t7 = 0
+        j   Fim_Arquivo	     # pula para funcao que decodifica
                
                
 LEITURA_INTEIRO:
-	li $v0, 5	# código para ler um inteiro
+	li $v0, 5	# codigo para ler um inteiro
 	syscall		# executa a chamada do SO para ler
-	jr $ra		# volta para o lugar de onde foi chamado (no caso, jal le_inteiro_do_teclado)               
+	jr $ra		# volta para o lugar de onde foi chamado
 
 MSG_ERRO:
+
 	imprime_str("Erro ao abrir o ficheiro de entrada")
 	addiu  $sp, $sp, 8
-        li     $a0, 1 # se o valor != 0, deu erro
+        li     $a0, 1 # se o valor!=0, finaliza programa
         li     $v0, SERVICO_TERMINA_PROGRAMA
 	syscall
 	
@@ -43,39 +46,46 @@ Fim_Programa:
 	syscall
 
 Fim_Arquivo:
-	#Verifica se o contador é igual a qnt de instruções (int) informada
-	beq $t6, $t7, Fim_Programa
-	addi $t7, $t7, 1
+
+	#Verifica se o contador eh igual a qnt de instrucoes (int) informada
+	beq $t6, $t7, Fim_Programa # chama fim do programa
+	addi $t7, $t7, 1	   # incrementa o contador
 	
-	# Leitura das instruções
+	# Leitura das instrucoes
 	lw     $a0, 0($sp)          # $a0 <- o descritor do arquivo
 	la     $a1, instrucoes      # $a1 <- endereco do buffer de entrada
-        li     $a2, 4               # $a2 <- numero de bytes que serão lidos
-        li     $v0, SERVICO_ESCREVE_ARQUIVO
+        li     $a2, 4               # $a2 <- numero de bytes que serao lidos
+        li     $v0, SERVICO_LEITURA_ARQUIVO # $v0 <- numero de caracteres lidos
         syscall
        
+        # Se $v0 (caracteres lidos) eh menor que 4, $t0 = 1
         slti   $t0, $v0, 4	    # teste para verificar se foram lidos 32 bits
-        beq    $t0, $zero, IMPRIME  # caso não, finaliza a execução do programa
+        beq    $t0, $zero, IMPRIME  # caso nao ($t0 = 0), finaliza a execucao
         j   Fim_Programa	    # encerra o programa
 
 IMPRIME:	
-	jal    impr_endereco
-	jal    impr_codigo_maquina
-	jal    impr_inst
+	jal    imprime_endereco
+	jal    imprime_codigo_maquina
+	jal    imprime_inst
 	j      Fim_Programa
 	 
-impr_endereco:
+imprime_endereco:
+	# Carrega em $t0 endereco da variavel "Endereco"
+	# Carrega conteudo da variavel em $t1
 	la     $t0, Endereco
 	lw     $t1, 0($t0)
 	move   $a0, $t1
 	li     $v0, SERVICO_IMPRIME_HEX
 	syscall
+	
 	imprime_espaco()
+	# Incrementa endereco em 4
+	# Salva novo valor em $t0
 	addi   $t1, $t1, 4
 	sw     $t1, 0($t0)
 	jr     $ra
 
-impr_codigo_maquina:
+imprime_codigo_maquina:
 	la     $t0, instrucoes
 	lw     $a0, 0($t0)
 	li     $v0, SERVICO_IMPRIME_HEX
@@ -83,12 +93,12 @@ impr_codigo_maquina:
 	imprime_espaco()
 	jr     $ra
 
-impr_inst:
+imprime_inst:
 	la     $t0, instrucoes  	# vetor que recebe as instrucoes
 	lw     $t1, 0($t0)
         srl    $t3, $t1, 26     	# isola o op code (32bits - 6) = 26
         move   $a0, $t3
-        				# verifica a que instrução pertence o opcode
+        				# verifica a que instruï¿½ï¿½o pertence o opcode
         beqz   $t3, TIPO_R          	 
         jal    isola_CAMPOS_J
         beq    $t3, 0x02, inst_J    
@@ -103,7 +113,7 @@ impr_inst:
         beq    $t3, 0x28, inst_SB
         beq    $t3, 0x24, inst_LI
         beq    $t3, 0x09, inst_ADDIU 
-  	imprime_str("(Instrução desconhecida)\n")  
+  	imprime_str("(Instruï¿½ï¿½o desconhecida)\n")  
   	j      Fim_Arquivo
   	
 isola_CAMPOS_R:
@@ -187,7 +197,7 @@ TIPO_R:
 	beq    $t3, 0x08, inst_JR
 	j      Fim_Arquivo
 
-impr_reg_s: # verifica qual reg_istrador deve imprimir
+imprime_reg_s: # verifica qual reg_istrador deve imprimir
 	sw     $ra, 4($sp)
 	beq    $a0, 0x00, reg_zero # $zero
 	beq    $a0, 0x01, reg_at   # $at
@@ -228,15 +238,15 @@ inst_ADD:
 	imprime_str("add ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	nova_linha()
 	j      Fim_Arquivo     
 	
@@ -244,15 +254,15 @@ inst_ADDU:
 	imprime_str("addu ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	nova_linha()
 	j      Fim_Arquivo     
 	
@@ -260,11 +270,11 @@ inst_ADDI:
 	imprime_str("addi ")
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
@@ -277,15 +287,15 @@ inst_SUB:
 	imprime_str("sub ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	nova_linha()
 	j      Fim_Arquivo     
 
@@ -293,15 +303,15 @@ inst_SUBU:
 	imprime_str("subu ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	nova_linha()
 	j      Fim_Arquivo     
 
@@ -310,7 +320,7 @@ inst_LI:
 	imprime_str("li ")
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
@@ -323,7 +333,7 @@ inst_LW:
 	imprime_str("lw ")
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
@@ -332,7 +342,7 @@ inst_LW:
 	imprime_str("(")
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_str(")")
 	nova_linha()
 	j      Fim_Arquivo      
@@ -341,7 +351,7 @@ inst_SW:
 	imprime_str("sw ")
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
@@ -350,7 +360,7 @@ inst_SW:
 	imprime_str("(")
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_str(")")
 	nova_linha()
 	j      Fim_Arquivo     
@@ -359,11 +369,11 @@ inst_SLL:
 	imprime_str("sll ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s	
+	jal    imprime_reg_s	
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
@@ -376,11 +386,11 @@ inst_SRL:
 	imprime_str("srl ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s	
+	jal    imprime_reg_s	
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
@@ -393,15 +403,15 @@ inst_AND:
 	imprime_str("and ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	nova_linha()
 	j      Fim_Arquivo     
 
@@ -409,15 +419,15 @@ inst_NOR:
 	imprime_str("nor ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	nova_linha()
 	j      Fim_Arquivo     
 	
@@ -425,15 +435,15 @@ inst_XOR:
 	imprime_str("xor ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	nova_linha()
 	j      Fim_Arquivo     
 	
@@ -441,11 +451,11 @@ inst_BEQ:
 	imprime_str("beq ")
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
@@ -458,11 +468,11 @@ inst_BNE:
 	imprime_str("bne ")
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
@@ -475,15 +485,15 @@ inst_SLT:
 	imprime_str("slt ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	nova_linha()
 	j      Fim_Arquivo     
 
@@ -491,11 +501,11 @@ inst_SLTI:
 	imprime_str("slti ")
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
@@ -508,11 +518,11 @@ inst_SLTIU:
 	imprime_str("sltiu ")
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $a0, Const16
 	lw     $a0, 0($t0)
@@ -525,15 +535,15 @@ inst_SLTU:
 	imprime_str("sltu ")
 	la     $t0, RD
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	nova_linha()
 	j      Fim_Arquivo     
 
@@ -559,7 +569,7 @@ inst_JR:
 	imprime_str("jr ")
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	nova_linha()
 	j      Fim_Arquivo 
 		
@@ -567,7 +577,7 @@ inst_LB:
 	imprime_str("lb ")
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
@@ -576,7 +586,7 @@ inst_LB:
 	imprime_str("(")
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_str("(")
 	nova_linha()
 	j      Fim_Arquivo     
@@ -586,11 +596,11 @@ inst_ADDIU:
 	la     $t0, RT
 	lw     $s0, 0($t0)
 	move   $a0, $s0
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
@@ -603,7 +613,7 @@ inst_SB:
 	imprime_str("sb ")
 	la     $t0, RT
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
@@ -612,7 +622,7 @@ inst_SB:
 	imprime_str("(")
 	la     $t0, RS
 	lw     $a0, 0($t0)
-	jal    impr_reg_s
+	jal    imprime_reg_s
 	imprime_str("(")
 	nova_linha()
 	j      Fim_Arquivo     
@@ -721,8 +731,8 @@ reg_ra:
 	jr $ra
 	
 .data
-Endereco:  	.word 0x00400000 # endereço inicial
-instrucoes: 	.space 4	 # vetor que guarda os 4 bytes da instruçao atual
+Endereco:  	.word 0x00400000 # endereï¿½o inicial
+instrucoes: 	.space 4	 # vetor que guarda os 4 bytes da instruï¿½ao atual
 buffer_entrada: .space 4  	 # vetor que guarda a entrada da leitura
 
 RS:	.space 1
@@ -783,7 +793,7 @@ reg_$k1:     .asciiz "$k1"
 
 
 
-#Variáveis SIMULADOR
+#Variï¿½veis SIMULADOR
 memoria_text:			.space 4096
 memoria_data:			.space 4096
 
@@ -794,10 +804,10 @@ msg_erro_leitura_arquivo:	.asciiz "\nErro na leitura do arquivo\n"
 
 #Contador de programa
 pc:				.space 4	
-#Registrador de instrução
+#Registrador de instruï¿½ï¿½o
 ir:				.space 4
 
-#Campos instrução em IR
+#Campos instruï¿½ï¿½o em IR
 instrucao_op:				.space 4
 instrucao_rs:				.space 4
 instrucao_rt:				.space 4	
