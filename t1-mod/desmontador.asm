@@ -10,7 +10,7 @@ main:
         # $v0 contém descritor do arquivo
         la     $a0, Entrada 	     # $a0 <- endereco da string com o nome do arquivo
         li     $a1, 0 		     # Flags: 0 - indica modo de leitura
-        li     $a2, 0 		     # Modo - � ignorado pelo servico
+        li     $a2, 0 		     # Modo - eh ignorado pelo servico
         li     $v0, SERVICO_ABRE_ARQUIVO	
         syscall         
       	
@@ -20,6 +20,7 @@ main:
         bne    $t0, $zero, MSG_ERRO  # caso contrario, continua a execucao
         
         imprime_str("\nInforme o numero de instrucoes a executar: ")
+        
         jal LEITURA_INTEIRO  # chama funcao para ler
         la  $t6, 0($v0)	     # carrega o inteiro lido em $t6     
       	li  $t7, 0	     # inicializa contador em $t7 = 0
@@ -55,13 +56,13 @@ Fim_Arquivo:
 	lw     $a0, 0($sp)          # $a0 <- o descritor do arquivo
 	la     $a1, instrucoes      # $a1 <- endereco do buffer de entrada
         li     $a2, 4               # $a2 <- numero de bytes que serao lidos
-        li     $v0, SERVICO_LEITURA_ARQUIVO # $v0 <- numero de caracteres lidos
-        syscall
-       
+        li     $v0, SERVICO_LEITURA_ARQUIVO # $v0 <- numero de bytes lidos
+       	syscall
+       	
         # Se $v0 (caracteres lidos) eh menor que 4, $t0 = 1
         slti   $t0, $v0, 4	    # teste para verificar se foram lidos 32 bits
-        beq    $t0, $zero, IMPRIME  # caso nao ($t0 = 0), finaliza a execucao
-        j   Fim_Programa	    # encerra o programa
+        beq    $t0, $zero, IMPRIME  # caso $t0 = 0 (lidos 4 bytes), continua
+        j   Fim_Programa	    # senao, encerra o programa
 
 IMPRIME:	
 	jal    imprime_endereco
@@ -71,7 +72,8 @@ IMPRIME:
 	 
 imprime_endereco:
 	# Carrega em $t0 endereco da variavel "Endereco"
-	# Carrega conteudo da variavel em $t1
+	# Carrega conteudo da variavel Endereco em $t1
+	# Move para $a0 por default e chama syscall
 	la     $t0, Endereco
 	lw     $t1, 0($t0)
 	move   $a0, $t1
@@ -86,6 +88,9 @@ imprime_endereco:
 	jr     $ra
 
 imprime_codigo_maquina:
+	# Carrega em $t0 endereco da variavel "instrucoes"
+	# Carrega conteudo da variavel instrucoes em $a0
+	# Chama syscall
 	la     $t0, instrucoes
 	lw     $a0, 0($t0)
 	li     $v0, SERVICO_IMPRIME_HEX
@@ -94,15 +99,19 @@ imprime_codigo_maquina:
 	jr     $ra
 
 imprime_inst:
-	la     $t0, instrucoes  	# vetor que recebe as instrucoes
-	lw     $t1, 0($t0)
-        srl    $t3, $t1, 26     	# isola o op code (32bits - 6) = 26
-        move   $a0, $t3
-        				# verifica a que instru��o pertence o opcode
-        beqz   $t3, TIPO_R          	 
+	la     $t0, instrucoes	# Carrega em $t0 endereco da variavel "instrucoes"
+	lw     $t1, 0($t0)	# Carrega conteudo da variavel instrucoes em $t1
+        srl    $t3, $t1, 26     # Isola o opcode deslocando 26 bits = 32bits-6
+        #move   $a0, $t3
+        
+        # Se $t3==0, instrucao tipo R	
+        beqz   $t3, TIPO_R
+        
+        #Senao, 
         jal    isola_CAMPOS_J
         beq    $t3, 0x02, inst_J    
         beq    $t3, 0x03, inst_JAL   
+        
         jal    isola_CAMPOS_I
         beq    $t3, 0x08, inst_ADDI 
         beq    $t3, 0x04, inst_BEQ
@@ -113,7 +122,7 @@ imprime_inst:
         beq    $t3, 0x28, inst_SB
         beq    $t3, 0x24, inst_LI
         beq    $t3, 0x09, inst_ADDIU 
-  	imprime_str("(Instru��o desconhecida)\n")  
+  	imprime_str("(Instrucao desconhecida)\n")  
   	j      Fim_Arquivo
   	
 isola_CAMPOS_R:
@@ -731,7 +740,7 @@ reg_ra:
 	jr $ra
 	
 .data
-Endereco:  	.word 0x00400000 # endere�o inicial
+Endereco:  	.word 0x00400000 # endereco inicial
 instrucoes: 	.space 4	 # vetor que guarda os 4 bytes da instru�ao atual
 buffer_entrada: .space 4  	 # vetor que guarda a entrada da leitura
 
