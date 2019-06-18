@@ -42,15 +42,11 @@ Fim_Programa:
         li     $v0, SERVICO_TERMINA_PROGRAMA
 	syscall
 
-Fim_Arquivo: 		
-    	    
-    	# Contador
-	li $v0, 1	# código para imprimir um inteiro
-	la $a0, ($t7)	# $a0 é o registrador que irá conter o valor a ser impresso	
-	syscall		# executa a chamado do SO para imprimir
-	
+Fim_Arquivo:
+	#Verifica se o contador é igual a qnt de instruções (int) informada
 	beq $t6, $t7, Fim_Programa
 	addi $t7, $t7, 1
+	
 	# Leitura das instruções
 	lw     $a0, 0($sp)          # $a0 <- o descritor do arquivo
 	la     $a1, instrucoes      # $a1 <- endereco do buffer de entrada
@@ -751,6 +747,7 @@ Entrada:     .asciiz "exercicio12.dump"
 #nome_arquivo_data: .asciiz "data.bin"
 
 msg_erro:    .asciiz "erro de abertura"
+
 reg_$0:      .asciiz "$zero"
 reg_$at:     .asciiz "$at"
 reg_$v0:     .asciiz "$v0"
@@ -808,3 +805,5 @@ instrucao_rd:				.space 4
 instrucao_imm16:			.space 4
 instrucao_imm26:			.space 4
 instrucao_shamt:			.space 4	
+
+
