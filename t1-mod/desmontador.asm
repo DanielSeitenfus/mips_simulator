@@ -2,6 +2,28 @@
 .text
 .globl      main
 
+#Passos do MIPS
+# 1º) BUSCA:
+#	IR = memoria_text[PC]	
+#	PC = PC+4 (PC guarda a instrução a ser executada, assim, lê-se a instrução referência a posição PC no vetor
+# 2º) DECODIFICAÇÃO:
+#	(Essa parte já está desenvolvida, só adaptar para o nosso caso)
+#	A = registradores[IR[25-21]]
+#	B = registradores[IR[20-16]] (Acredito que isso seja os dois registradores que serão manipulados, caso a instrução use 2)
+#	UALSaída = PC + extensão de sinal (IR[15-0] << 2) (UALSaída, o que é?)
+# 3º) EXECUÇÃO, CÁLCULO DO ENDEREÇO DE MEMÓRIA OU EFETIVAÇÃO DO DESVIO CONDICIONAL:
+#    A) Referência à memória:
+#	UALSaída = A + extensão de sinal IR[15-0]
+#    B) Instrução aritmética ou lógica (Tipo R)
+#	UALSaída = A op B
+#    C) Desvio condicional:
+#	Se (A==B) então PC=UALSaída
+#
+#
+#
+#
+
+
 main:
 	# Reserva espaco na pilha para variaveis
 	addiu  $sp, $sp, -8

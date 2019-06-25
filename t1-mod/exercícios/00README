@@ -1,0 +1,21 @@
+Índice dos Arquivos
+
+exercicio001.s      tradução de a = b + c;
+exercicio002.s      tradução de a = b + c + d + e;
+exercicio004.s      trabalhando com índices numéricos. Traduzindo a[2] = a[0] + a[1];
+exercicio005.s      trabalhando com índices variáveis. Traduzindo a[k] = a[i] + a[j];
+exercicio039.s      exemplo de instruções load e store
+exercicio040.s      tradução de a = 10; e b = 1000000;
+exercicio041.s      tradução de a = b;
+exercicio042.s      tradução de a = b + 1 e c = b + 1000000.
+
+exercicio050.s      exemplo com a tradução da instrução goto: um laço infinito.
+exercicio051.s      exemplo com a tradução da instrução if.
+exercicio052.s      exemplo com a tradução da instrução if else.
+exercicio053.s      exemplo com a tradução da instrução while.
+exercicio054.s      exemplo com a tradução da instrução do-while.
+exercicio055.s      exemplo com a tradução da instrução switch-case (usando uma tabela para desvios).
+exercicio055a.s     exemplo com a tradução da instrução switch-case (usando comparações).
+exercicio056.s      exemplo com a tradução da instrução for.
+
+exercicio067.s      lê um arquivo e imprime os caracteres no console 
