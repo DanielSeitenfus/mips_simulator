@@ -18,10 +18,13 @@
 #	UALSaída = A op B
 #    C) Desvio condicional:
 #	Se (A==B) então PC=UALSaída
-#
-#
-#
-#
+# 4º) FINAL DA EXECUÇÃO DAS INSTRUÇÕES DE ACESSO À MEMÓRIA E DO TIPO R
+#    A) Referência à memória:
+#	MDR = Memória [UALSaída]; ou Memória = [UALSaída] = B;
+#    B) Instruções aritméticas ou lógicas (tipo R):
+#	Reg[IR[15-11]] = UALSaída;
+# 5º) FINAL DE LEITURA DE MEMÓRIA
+#	Load Word: Reg[IR[20-16]] = MDR
 
 
 main:
