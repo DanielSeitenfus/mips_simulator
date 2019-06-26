@@ -3,26 +3,25 @@
 .globl      main
 
 #Passos do MIPS
-# 1º) BUSCA:
+# 1ï¿½) BUSCA:
 #	IR = memoria_text[PC]	
-#	PC = PC+4 (PC guarda a instrução a ser executada, assim, lê-se a instrução referência a posição PC no vetor
-# 2º) DECODIFICAÇÃO:
-#	(Essa parte já está desenvolvida, só adaptar para o nosso caso)
+#	PC = PC+4 (PC guarda a instruï¿½ï¿½o a ser executada, assim, lï¿½-se a instruï¿½ï¿½o referï¿½ncia a posiï¿½ï¿½o PC no vetor
+# 2ï¿½) DECODIFICAï¿½ï¿½O:
+#	(Essa parte jï¿½ estï¿½ desenvolvida, sï¿½ adaptar para o nosso caso)
 #	A = registradores[IR[25-21]]
-#	B = registradores[IR[20-16]] (Acredito que isso seja os dois registradores que serão manipulados, caso a instrução use 2)
-#	UALSaída = PC + extensão de sinal (IR[15-0] << 2) (UALSaída, o que é?)
-# 3º) EXECUÇÃO, CÁLCULO DO ENDEREÇO DE MEMÓRIA OU EFETIVAÇÃO DO DESVIO CONDICIONAL:
-#    A) Referência à memória:
-#	UALSaída = A + extensão de sinal IR[15-0]
-#    B) Instrução aritmética ou lógica (Tipo R)
-#	UALSaída = A op B
+#	B = registradores[IR[20-16]] (Acredito que isso seja os dois registradores que serï¿½o manipulados, caso a instruï¿½ï¿½o use 2)
+#	UALSaï¿½da = PC + extensï¿½o de sinal (IR[15-0] << 2) (UALSaï¿½da, o que ï¿½?)
+# 3ï¿½) EXECUï¿½ï¿½O, Cï¿½LCULO DO ENDEREï¿½O DE MEMï¿½RIA OU EFETIVAï¿½ï¿½O DO DESVIO CONDICIONAL:
+#    A) Referï¿½ncia ï¿½ memï¿½ria:
+#	UALSaï¿½da = A + extensï¿½o de sinal IR[15-0]
+#    B) Instruï¿½ï¿½o aritmï¿½tica ou lï¿½gica (Tipo R)
+#	UALSaï¿½da = A op B
 #    C) Desvio condicional:
-#	Se (A==B) então PC=UALSaída
+#	Se (A==B) entï¿½o PC=UALSaï¿½da
 #
 #
 #
 #
-
 
 main:
 	# Reserva espaco na pilha para variaveis
@@ -183,7 +182,7 @@ isola_CAMPOS_I:
 	la     $s0, RS
 	la     $s1, RT
 	la     $s2, Const16
-				
+	
 	sll    $t2, $t1, 6	#rs
 	srl    $t2, $t2, 27
 	sw     $t2, 0($s0)	
@@ -628,10 +627,12 @@ inst_ADDIU:
 	lw     $s0, 0($t0)
 	move   $a0, $s0
 	jal    imprime_reg_s
+	
 	imprime_virgula()
 	la     $t0, RS
 	lw     $a0, 0($t0)
 	jal    imprime_reg_s
+	
 	imprime_virgula()
 	la     $t0, Const16
 	lw     $a0, 0($t0)
