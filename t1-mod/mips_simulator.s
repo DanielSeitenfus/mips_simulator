@@ -44,7 +44,7 @@ ABRE_ARQUIVO_TEXT:
 	bne    $t0, $zero, Fim_Programa  # caso contrario, continua a execucao
         
 	imprime_str("\nInforme o numero de instrucoes a executar: ")
-        
+      
 	jal LEITURA_INTEIRO      # chama funcao para ler
     	la  $t6, 0($v0)	     	 # carrega o inteiro lido em $t6     
     	li  $t7, 0	     	 # inicializa contador em $t7 = 0
@@ -142,7 +142,6 @@ endereco_final_pilha:		.word 0x7FFFEFFC
 # Ficheiros de entrada:
 nome_arquivo_text: 		.asciiz "text.bin"
 nome_arquivo_data: 		.asciiz "data.bin"
-msg_erro_leitura_arquivo:	.asciiz "\nErro na leitura do arquivo\n"
 
 #Campos intrucoes em IR
 campo_op:			.space 4
