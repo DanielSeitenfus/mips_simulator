@@ -63,7 +63,6 @@ ARMAZENA_TEXT:
     	# Verifica se alguma instrucao foi lida
     	slti   $t0, $v0, 4	    	# Se $v0 (caracteres lidos) eh menor que 4, $t0 = 1
     	bnez   $t0, ABRE_ARQUIVO_DATA   # caso nao lidos 4 bytes, encerra
-	
 	jal ARMAZENA_TEXT
 
 ABRE_ARQUIVO_DATA:
@@ -93,7 +92,6 @@ ARMAZENA_DATA:
     	# Verifica se alguma instrucao foi lida
     	slti   $t0, $v0, 4	    	# Se $v0 (caracteres lidos) eh menor que 4, $t0 = 1
     	bnez   $t0, Processa_Instrucoes	# caso nao lidos 4 bytes, encerra
-	
     	jal   ARMAZENA_DATA
 
 LEITURA_INTEIRO:
