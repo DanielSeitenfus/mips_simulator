@@ -46,9 +46,19 @@ ABRE_ARQUIVO_TEXT:
 	imprime_str("\nInforme o numero de instrucoes a executar: ")
       
 	jal LEITURA_INTEIRO      # chama funcao para ler
-    	la  $t6, 0($v0)	     	 # carrega o inteiro lido em $t6     
-    	li  $t7, 0	     	 # inicializa contador em $t7 = 0
+    	la  $t1, 0($v0)	     	 # carrega o inteiro lido em $t1     
+    	li  $t2, 0	     	 # inicializa contador em $t2 = 0
     	
+    	# Endereço de pc e ir em $t3 e $t4, respectivamente 
+    	la  $t3, pc
+    	la  $t5, endereco_inicial_text
+    	lw  $t3, 0($t5)
+    	
+    	# IR
+    	la  $t4, IR
+    	
+    	# Contador
+    	la  $t5, 0
     	jal ARMAZENA_TEXT        # pula para funcao que guarda no vetor
     	
 ARMAZENA_TEXT:
@@ -56,6 +66,12 @@ ARMAZENA_TEXT:
 	# Leitura das instrucoes
 	lw     $a0, 0($sp)          # $a0 <- o descritor do arquivo
 	la     $a1, memoria_text    # $a1 <- endereco do buffer de entrada
+	
+	# Incrementa endereço do vetor
+	add    $t5, $t5, 4
+	add    $a1, $a1, $t5 
+	
+	# Processa leitura
 	li     $a2, 4               # $a2 <- numero de bytes que serao lidos
 	li     $v0, SERVICO_LEITURA_ARQUIVO # $v0 <- numero de bytes lidos
 	syscall
@@ -66,7 +82,7 @@ ARMAZENA_TEXT:
 	jal ARMAZENA_TEXT
 
 ABRE_ARQUIVO_DATA:
-
+    	
 	# $v0 possui descritor do arquivo
 	la     $a0, nome_arquivo_data  # $a0 <- endereco da string com o nome do arquivo
 	li     $a1, 0 		       # Flags: 0 - indica modo de leitura
@@ -79,12 +95,21 @@ ABRE_ARQUIVO_DATA:
 	slt    $t0, $v0, $zero           # se tiver algum erro, termina o programa
 	bne    $t0, $zero, Fim_Programa  # caso contrario, continua a execucao
         
-    	jal ARMAZENA_DATA        # pula para funcao que guarda no vetor
+        # Reseta e reaproveita contador
+    	la  $t5, 0
+    	jal ARMAZENA_DATA           # pula para funcao que guarda no vetor
     	
 ARMAZENA_DATA:
 
+	# Leitura dos dados
 	lw     $a0, 0($sp)          # $a0 <- o descritor do arquivo
 	la     $a1, memoria_data    # $a1 <- endereco do buffer de entrada
+	
+	# Incrementa endereço do vetor
+	add    $t5, $t5, 4
+	add    $a1, $a1, $t5 
+	
+	# Processa leitura
     	li     $a2, 4        	    # $a2 <- numero de bytes que serao lidos
     	li     $v0, SERVICO_LEITURA_ARQUIVO # $v0 <- numero de bytes lidos
     	syscall
@@ -92,6 +117,7 @@ ARMAZENA_DATA:
     	# Verifica se alguma instrucao foi lida
     	slti   $t0, $v0, 4	    	# Se $v0 (caracteres lidos) eh menor que 4, $t0 = 1
     	bnez   $t0, Processa_Instrucoes	# caso nao lidos 4 bytes, encerra
+    	
     	jal   ARMAZENA_DATA
 
 LEITURA_INTEIRO:
@@ -109,22 +135,16 @@ Fim_Programa:
 
 Processa_Instrucoes:
 
-	#Verifica se o contador eh igual a qnt de IR (int) informada
-	beq $t6, $t7, Fim_Programa # chama fim do programa
-	addi $t7, $t7, 1	   # incrementa o contador
+	#Verifica se o contador eh igual a qnt de instrucoes informada
+	beq $t1, $t2, Fim_Programa # chama fim do programa
+	addi $t2, $t2, 1	   # incrementa o contador
+	
+	# Incrementa PC
+	addiu $t3, $t3, 4  
+	
 	j Processa_Instrucoes
 
 .data
-
-.align 2
-
-RS:	.space 1
-RT:  	.space 1
-RD:  	.space 1   
-SHAMT:  .space 1
-FUNCT:  .space 1
-Const16:.space 4
-Const26:.space 4
 
 #Variaveis do SIMULADOR
 
@@ -188,7 +208,12 @@ reg_k1:     .space 4
 
 #Contador de programa
 pc:				.space 4	
-#Registrador de instru��o
+#Registrador de instrucao
 IR:				.space 4
 
-	
+#########################################
+
+# LEGENDA:
+# t1 e t2: contadores
+# t3
+
