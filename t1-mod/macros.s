@@ -8,8 +8,7 @@
 .eqv        SERVICO_TERMINA_PROGRAMA    17
 .eqv        SERVICO_IMPRIME_HEX 	34
 
-# Uso: imprime_str()
-.macro imprime_str(%string)
+.macro IMPRIME_STRING(%string)
 .data  
 string: .asciiz %string
 .text
@@ -41,10 +40,10 @@ string: .asciiz %string
 
 # Uso: imprime_virgula()
 .macro imprime_virgula()
-       imprime_str(", ")
+       IMPRIME_STRING(", ")
 .end_macro
 
 # Uso: imprime_espaco()
 .macro imprime_espaco()
-       imprime_str(" ")
+       IMPRIME_STRING(" ")
 .end_macro
